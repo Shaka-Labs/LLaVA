@@ -89,7 +89,7 @@ def main(args):
 
         outputs = tokenizer.decode(output_ids[0, input_ids.shape[1]:]).strip()
         # conv.messages[-1][-1] = outputs
-        return outputs
+        return outputs[0]  # only return first character, assuming it's the action index
 
     def run_taxi_vla_closed_loop():
         def extract_passenger_location(state):
@@ -105,7 +105,7 @@ def main(args):
         n_done = 0
         n_truncated = 0
 
-        NUM_STEPS = 10_000
+        NUM_STEPS = 1_000
         for i in range(NUM_STEPS):
             rgb = env.render()
             passenger_location = extract_passenger_location(obs)
@@ -122,7 +122,7 @@ def main(args):
 
             print(f"{i=}, {done=}, {truncated=}")
 
-            if done:
+            if done or truncated:
                 obs, info = env.reset()
         
         print(f"{n_done=}, {n_truncated=}")
