@@ -15,8 +15,7 @@ from io import BytesIO
 from transformers import TextStreamer
 
 import gymnasium as gym
-from tqdm import tqdm
-
+import pickle
 
 def load_image(image_file):
     if image_file.startswith('http://') or image_file.startswith('https://'):
@@ -102,6 +101,8 @@ def main(args):
         info = {}
         action = None
 
+        log = []
+
         n_done = 0
         n_truncated = 0
 
@@ -113,6 +114,14 @@ def main(args):
             jpg = Image.fromarray(rgb).convert('RGB')
             action = get_vla_action(jpg, info)
             print(f"str {action=}")
+
+            log.append(
+                {
+                    "rgb": rgb,
+                    "action": action,
+                }
+            )
+
             action = int(action)
             print(f"int {action=}")
             obs, reward, done, truncated, info = env.step(action)
@@ -126,6 +135,10 @@ def main(args):
                 obs, info = env.reset()
         
         print(f"{n_done=}, {n_truncated=}")
+
+        # dump pkl
+        with open("taxi_vla_closed_loop.pkl", "wb") as f:
+            pickle.dump(log, f)
 
     run_taxi_vla_closed_loop()
 
